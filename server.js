@@ -1,5 +1,4 @@
 const express = require("express");
-const sqlite3 = require("sqlite3");
 const cors = require("cors");
 const XLSX = require("xlsx");
 
@@ -7,17 +6,22 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const db = new sqlite3.Database("/data/banco.db");
+const { pool } = require("pg")
 
-db.run(`
-    CREATE TABLE IF NOT EXISTS dados (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    campo1 TEXT,
-    campo2 TEXT,
-    campo3 TEXT,
-    data DATETIME DEFAULT CURRENT_TIMESTAMP
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+})
+
+pool.query(`
+  CREATE TABLE IF NOT EXISTS registros (
+    id SERIAL PRIMARY KEY,
+    valor NUMERIC,
+    tipo TEXT,
+    observacao TEXT,
+    data DATE
   )
-`);
+`)
 
 app.post("/salvar", (req, res) => {
     const { campo1, campo2, campo3, campo4 } = req.body;
