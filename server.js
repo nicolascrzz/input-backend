@@ -3,6 +3,8 @@ const cors = require("cors");
 const XLSX = require("xlsx");
 const { Pool } = require("pg");
 
+require("dotenv").config();
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -82,3 +84,29 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("Servidor rodando na porta " + PORT);
 });
+
+app.post("/admin/login", (req, res) => {
+
+  const { senha } = req.body;
+
+  if (!senha) {
+    return res.status(400).json({
+      ok: false,
+      mensagem: "Senha não enviada"
+    });
+  }
+
+  if (senha === process.env.ADMIN_PASSWORD) {
+
+    return res.json({
+      ok: true
+    });
+
+  } else {
+
+    return res.status(401).json({
+      ok: false,
+      mensagem: "Senha incorreta"
+    })
+  }
+})
