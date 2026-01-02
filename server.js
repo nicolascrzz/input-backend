@@ -85,7 +85,7 @@ app.listen(PORT, () => {
   console.log("Servidor rodando na porta " + PORT);
 });
 
-app.post("/admin/login", (req, res) => {
+ app.post("/admin/login", (req, res) => {
 
   const { senha } = req.body;
 
@@ -110,3 +110,50 @@ app.post("/admin/login", (req, res) => {
     })
   }
 })
+
+app.post("/admin/comando", (req, res) => {
+
+  const { comando } = req.body;
+
+  switch (comando.toLowerCase()) {
+
+    case "ping":
+      return res.json({ resposta: "pong ✅" });
+
+    case "status":
+      return res.json({ resposta: "Servidor online 🟢" });
+      
+    case "limpar banco":
+      return res.json({ resposta: "Comando bloqueado ⚠️" });
+
+    default:
+      return res.json({ resposta: "Comando não listado" });
+  }
+})
+
+app.post("/admin/limpar-registro", async (req, res) => {
+
+  const senha = req.headers["x-admin-password"]
+
+  if (senha !== process.env.ADMIN_PASSWORD) {
+    return res.status(401).json({
+      ok: false,
+      mensagem: "Não Autorizado"
+  });
+}
+
+  try {
+    await pool.query("TRUNCATE TABLE registros RESTART IDENTITY");
+
+    return res.json({
+      ok: true,
+      mensagem: "Relatório Limpo"
+    });
+
+  } catch (err) {
+    return res.status(500).json({
+      ok: false,
+      mensagem: "Erro ao limpar registros"
+    });
+  }
+});
